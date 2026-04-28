@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheet</title>
+    <link rel="stylesheet" href="../css/style-sheet.css">
+</head>
+<body>
+
+<nav>
+    <div class="container">
+        <div class="nav-wrapper">
+            <div class="logo">
+                <a href="../index.html"><img src="../pics/nnsclogowhite.png" alt="NNSClogo" class="NNSClogo" ></a>
+            </div>
+            <ul class="menu" id="navMenu">
+                <li><a href="../index.html">หน้าแรก</a></li>
+                <li><a href="sheet.html">ชีทสรุป</a></li>
+                <li><a href="https://forms.gle/SfSw9uC3S4TPVWY87" target="_blank">ฟอร์มแจ้งปัญหา</a></li>
+                <li><a href="https://forms.gle/Y8nrn2Q5153oJuC29" target="_blank">ฟอร์มเสียงตามสาย</a></li>
+                <li><a href="#contact">ช่องทางการติดต่อ</a></li>
+            </ul>
+            <div class="hamburger">
+                <img src="../pics/menus.png" alt="fas fa-bars" style="height: 30px; width: 30px; ">
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="sheet-hero">
+    <div class="container">
+        <h2>ชีทสรุป</h2>
+    </div>
+</div>
+
+<div class="breadcrumb">
+    <div class="container" id="breadcrumbNav">
+        <a href="#" onclick="navigateTo('home')">ไม่เจาะจงระดับชั้น</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 1</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 2</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 3</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 4</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 5</a>
+        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 6</a>
+        <span id="breadcrumbPath"></span>
+    </div>
+</div>
+
+<div class="content-section">
+    <div class="container" id="mainContent">
+        <div class="loading">📖 กำลังโหลดชีทสรุป...</div>
+    </div>
+</div>
+
+<!-- Modal for PDF -->
+<div id="pdfModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <iframe id="pdfFrame" src=""></iframe>
+    </div>
+</div>
+
+<footer id="contact">
+        <div class="container">
+            <div class="footer-wrapper">
+                <div class="footer-grid">
+                    <div class="footer-grid-items">
+                        <ul>
+                            <li><a href="https://www.instagram.com/narinukun.sc/"><img src="../pics/instagram.png" class="icon"></a></li>
+                            <li><a href="https://www.facebook.com/studentcouncilnarinukun"><img src="../pics/facebook.png" class="icon"></a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-grid-items">
+                        <img src="../pics/NNSC_LOGO_ALLWHITE.png" class="biglogo">
+                    </div>
+                </div>
+            </div>
+        </div>
+</footer>
+
+<script src="../script.js"> </script>
+<script>
+    // ฟังก์ชันเพิ่มเติมสำหรับ sheet.html โดยเฉพาะ
+    let allSheets = [];
+    let currentFilter = 'ทั้งหมด';
+
+    // ฟังก์ชันแสดงชีทสรุป
+    function displaySheets(sheets) {
+        const container = document.getElementById('mainContent');
+        if (!sheets || sheets.length === 0) {
+            container.innerHTML = '<div class="loading">📭 ยังไม่มีชีทสรุปในหมวดนี้ เร็วๆนี้จะมีนะคะ</div>';
+            return;
+        }
+
+        container.innerHTML = `
+            <div class="sheets-grid">
+                ${sheets.map(sheet => `
+                    <div class="sheet-card">
+                        <h3>📄 ${escapeHtml(sheet.sheetName)}</h3>
+                        <p><strong>📖 วิชา:</strong> ${escapeHtml(sheet.subject)}</p>
+                        <p><strong>🎯 ระดับชั้น:</strong> ${escapeHtml(sheet.grade)}</p>
+                        <button class="btn-view" onclick="viewPDF('${escapeHtml(sheet.fileUrl)}')">📖 ดูชีทสรุป</button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // ป้องกัน XSS
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // เปิด PDF
+    window.viewPDF = function(fileUrl) {
+        const modal = document.getElementById('pdfModal');
+        const pdfFrame = document.getElementById('pdfFrame');
+        
+        // ดึง file ID จาก URL
+        const fileId = extractFileId(fileUrl);
+        if (fileId) {
+            pdfFrame.src = `https://drive.google.com/file/d/${fileId}/preview`;
+        } else {
+            pdfFrame.src = fileUrl;
+        }
+        modal.style.display = 'block';
+    };
+
+    function extractFileId(url) {
+        if (!url) return '';
+        const match = url.match(/[-\w]{25,}/);
+        return match ? match[0] : '';
+    }
+
+    // ปิด Modal
+    document.querySelector('.close-modal')?.addEventListener('click', function() {
+        document.getElementById('pdfModal').style.display = 'none';
+        document.getElementById('pdfFrame').src = '';
+    });
+
+    // ตัวกรอง
+    function setupFilters() {
+        const btns = document.querySelectorAll('.filter-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                btns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = this.dataset.grade;
+                
+                if (currentFilter === 'ทั้งหมด') {
+                    displaySheets(allSheets);
+                } else {
+                    const filtered = allSheets.filter(sheet => sheet.grade === currentFilter);
+                    displaySheets(filtered);
+                }
+            });
+        });
+    }
+
+    // โหลดข้อมูลจาก Google Sheets ผ่าน Apps Script
+    async function loadData() {
+        const container = document.getElementById('mainContent');
+        
+        // เปลี่ยน URL เป็น Deployment ID ของคุณ
+        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxsETedwEZr4XOjKge605QD1OdbTo_YmO6YlyBo1tM/exec';
+        
+        try {
+            const response = await fetch(scriptUrl + '?action=getApproved');
+            const data = await response.json();
+            
+            console.log('ข้อมูลที่ได้:', data);
+            
+            if (data && Array.isArray(data)) {
+                allSheets = data;
+                displaySheets(allSheets);
+                setupFilters();
+            } else {
+                // ถ้าไม่ใช่ array ลองเรียกแบบอื่น
+                throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
+            }
+        } catch (error) {
+            console.error('โหลดข้อมูลผิดพลาด:', error);
+            container.innerHTML = `
+                <div class="loading">
+                    ไม่สามารถโหลดข้อมูลได้<br>
+                    <small>${error.message}</small><br><br>
+                    <a href="https://forms.gle/hkj1aHvyhT3V46L77" target="_blank">คลิกที่นี่เพื่อบริจาคชีทสรุป</a>
+                </div>
+            `;
+        }
+    }
+
+    // เริ่มโหลดข้อมูล
+    loadData();
+</script>
+
+</body>
+</html>
