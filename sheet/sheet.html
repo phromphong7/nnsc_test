@@ -31,35 +31,38 @@
 <div class="sheet-hero">
     <div class="container">
         <h2>ชีทสรุป</h2>
+        <a href="https://forms.gle/hkj1aHvyhT3V46L77" target="_blank" class="btn-donate">คลิกที่นี่เพื่อบริจาคชีทสรุป</a>
     </div>
 </div>
 
 <div class="breadcrumb">
     <div class="container" id="breadcrumbNav">
-        <a href="#" onclick="navigateTo('home')">ไม่เจาะจงระดับชั้น</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 1</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 2</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 3</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 4</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 5</a>
-        <a href="#" onclick="navigateTo('home')">มัธยมศึกษาปีที่ 6</a>
+        <a href="#" onclick="filterByGrade('ทั้งหมด')">ทั้งหมด</a>
+        <a href="#" onclick="filterByGrade('ม.1')">มัธยมศึกษาปีที่ 1</a>
+        <a href="#" onclick="filterByGrade('ม.2')">มัธยมศึกษาปีที่ 2</a>
+        <a href="#" onclick="filterByGrade('ม.3')">มัธยมศึกษาปีที่ 3</a>
+        <a href="#" onclick="filterByGrade('ม.4')">มัธยมศึกษาปีที่ 4</a>
+        <a href="#" onclick="filterByGrade('ม.5')">มัธยมศึกษาปีที่ 5</a>
+        <a href="#" onclick="filterByGrade('ม.6')">มัธยมศึกษาปีที่ 6</a>
+        <a href="#" onclick="filterByGrade('ไม่ระบุ')">ไม่เจาะจงระดับชั้น</a>
         <span id="breadcrumbPath"></span>
     </div>
 </div>
 
 <div class="content-section">
     <div class="container" id="mainContent">
-        <div class="loading">📖 กำลังโหลดชีทสรุป...</div>
+        <div class="loading">กำลังโหลดชีทสรุป...</div>
     </div>
 </div>
 
-<!-- Modal for PDF -->
-<div id="pdfModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal">&times;</span>
-        <iframe id="pdfFrame" src=""></iframe>
+<div id="pdfModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.8);">
+    <div class="modal-content" style="background-color:#fff; margin:5% auto; padding:20px; width:80%; height:80%; position:relative; border-radius:10px;">
+        <span class="close-modal" style="position:absolute; right:20px; top:10px; font-size:28px; cursor:pointer; font-weight:bold;">&times;</span>
+        <iframe id="pdfFrame" src="" width="100%" height="100%" frameborder="0"></iframe>
     </div>
 </div>
+
+<script src="../script.js"></script>
 
 <footer id="contact">
         <div class="container">
@@ -78,128 +81,6 @@
             </div>
         </div>
 </footer>
-
-<script src="../script.js"> </script>
-<script>
-    // ฟังก์ชันเพิ่มเติมสำหรับ sheet.html โดยเฉพาะ
-    let allSheets = [];
-    let currentFilter = 'ทั้งหมด';
-
-    // ฟังก์ชันแสดงชีทสรุป
-    function displaySheets(sheets) {
-        const container = document.getElementById('mainContent');
-        if (!sheets || sheets.length === 0) {
-            container.innerHTML = '<div class="loading">📭 ยังไม่มีชีทสรุปในหมวดนี้ เร็วๆนี้จะมีนะคะ</div>';
-            return;
-        }
-
-        container.innerHTML = `
-            <div class="sheets-grid">
-                ${sheets.map(sheet => `
-                    <div class="sheet-card">
-                        <h3>📄 ${escapeHtml(sheet.sheetName)}</h3>
-                        <p><strong>📖 วิชา:</strong> ${escapeHtml(sheet.subject)}</p>
-                        <p><strong>🎯 ระดับชั้น:</strong> ${escapeHtml(sheet.grade)}</p>
-                        <button class="btn-view" onclick="viewPDF('${escapeHtml(sheet.fileUrl)}')">📖 ดูชีทสรุป</button>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-    }
-
-    // ป้องกัน XSS
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    // เปิด PDF
-    window.viewPDF = function(fileUrl) {
-        const modal = document.getElementById('pdfModal');
-        const pdfFrame = document.getElementById('pdfFrame');
-        
-        // ดึง file ID จาก URL
-        const fileId = extractFileId(fileUrl);
-        if (fileId) {
-            pdfFrame.src = `https://drive.google.com/file/d/${fileId}/preview`;
-        } else {
-            pdfFrame.src = fileUrl;
-        }
-        modal.style.display = 'block';
-    };
-
-    function extractFileId(url) {
-        if (!url) return '';
-        const match = url.match(/[-\w]{25,}/);
-        return match ? match[0] : '';
-    }
-
-    // ปิด Modal
-    document.querySelector('.close-modal')?.addEventListener('click', function() {
-        document.getElementById('pdfModal').style.display = 'none';
-        document.getElementById('pdfFrame').src = '';
-    });
-
-    // ตัวกรอง
-    function setupFilters() {
-        const btns = document.querySelectorAll('.filter-btn');
-        btns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                btns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.dataset.grade;
-                
-                if (currentFilter === 'ทั้งหมด') {
-                    displaySheets(allSheets);
-                } else {
-                    const filtered = allSheets.filter(sheet => sheet.grade === currentFilter);
-                    displaySheets(filtered);
-                }
-            });
-        });
-    }
-
-    // โหลดข้อมูลจาก Google Sheets ผ่าน Apps Script
-    async function loadData() {
-        const container = document.getElementById('mainContent');
-        
-        // เปลี่ยน URL เป็น Deployment ID ของคุณ
-        const scriptUrl = 'https://script.google.com/macros/s/AKfycbxsETedwEZr4XOjKge605QD1OdbTo_YmO6YlyBo1tM/exec';
-        
-        try {
-            const response = await fetch(scriptUrl + '?action=getApproved');
-            const data = await response.json();
-            
-            console.log('ข้อมูลที่ได้:', data);
-            
-            if (data && Array.isArray(data)) {
-                allSheets = data;
-                displaySheets(allSheets);
-                setupFilters();
-            } else {
-                // ถ้าไม่ใช่ array ลองเรียกแบบอื่น
-                throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
-            }
-        } catch (error) {
-            console.error('โหลดข้อมูลผิดพลาด:', error);
-            container.innerHTML = `
-                <div class="loading">
-                    ไม่สามารถโหลดข้อมูลได้<br>
-                    <small>${error.message}</small><br><br>
-                    <a href="https://forms.gle/hkj1aHvyhT3V46L77" target="_blank">คลิกที่นี่เพื่อบริจาคชีทสรุป</a>
-                </div>
-            `;
-        }
-    }
-
-    // เริ่มโหลดข้อมูล
-    loadData();
-</script>
 
 </body>
 </html>

@@ -263,9 +263,8 @@ nav {
             background: var(--pink);
             color: white;
             border: none;
-            padding: 12px 30px;
+            padding: 8px 30px;
             border-radius: 30px;
-            font-size: 1.1rem;
             cursor: pointer;
             margin-top: 15px;
         }
